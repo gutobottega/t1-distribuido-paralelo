@@ -36,7 +36,7 @@ func jogador(id int, in chan string, out chan string, cartasIniciais []string) {
 			mao = append(mao, cartaRecebida)
 			remove := rand.Intn(len(mao))
 			print("Jogador ", id, " recebeu a carta ", cartaRecebida, " e passou a carta ", mao[remove], "\n")
-			out <- mao[remove]
+			carta := mao[remove]
 			mao = append(mao[:remove], mao[remove+1:]...)
 			//testa se todas as cartas na mao são iguais
 			bate := true
@@ -46,6 +46,20 @@ func jogador(id int, in chan string, out chan string, cartasIniciais []string) {
 					break
 				}
 			}
+			quantidadeBateu := len(bateuChan)
+			if quantidadeBateu > 0 {
+				if quantidadeBateu == NJ-1 {
+					// perdeu o jogo
+					println("Jogador", id, "perdeu o jogo\n")
+					wg.Done()
+					return
+				}
+				bateuChan <- struct{}{}
+				print("Jogador ", id, " bateu.\n")
+				wg.Done()
+				return
+			}
+			out <- carta
 			if bate {
 				print("Jogador ", id, " bateu com a mao: ")
 				for _, carta := range mao {
